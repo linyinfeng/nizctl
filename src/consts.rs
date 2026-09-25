@@ -6,6 +6,7 @@ lazy_static::lazy_static! {
     pub static ref PRODUCT_ID: HashMap<u16, &'static str> = {
         let mut map = HashMap::new();
         map.insert(0x512a, "atom66");
+        map.insert(0x5132, "atom68");
         map.insert(0x5129, "micro84");
         map
     };
