@@ -1,6 +1,5 @@
 use crate::consts;
 use serde::{Deserialize, Serialize};
-use std::convert::TryInto;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Keymap {
@@ -35,7 +34,7 @@ pub fn layers_from_keymap(keymap: Vec<Vec<u8>>) -> Vec<Vec<String>> {
         .map(|layer| {
             layer
                 .iter()
-                .map(|&keycode| consts::KEY_CODE_NAME[keycode as usize].to_string())
+                .map(|&keycode| consts::key_code_name(keycode as usize))
                 .collect()
         })
         .collect()
@@ -47,15 +46,21 @@ pub fn keymap_from_layers(layers: Vec<Vec<String>>) -> Vec<Vec<u8>> {
         .map(|layer| {
             layer
                 .iter()
-                .map(|name| {
-                    consts::KEY_CODE_NAME
-                        .iter()
-                        .position(|x| x == name)
-                        .unwrap_or(0)
-                        .try_into()
-                        .unwrap()
-                })
+                .map(|name| consts::key_code_from_name(name).unwrap_or(0) as u8)
                 .collect()
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Every keycode the firmware can report has to survive a pull/push round trip,
+    /// otherwise editing one key rewrites the ones the table has no name for.
+    #[test]
+    fn keymap_round_trip_is_lossless() {
+        let keymap: Vec<Vec<u8>> = (0..=255u8).map(|keycode| vec![keycode]).collect();
+        assert_eq!(keymap_from_layers(layers_from_keymap(keymap.clone())), keymap);
+    }
 }

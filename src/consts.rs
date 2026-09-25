@@ -12,6 +12,30 @@ lazy_static::lazy_static! {
     };
 }
 
+
+/// Name for a raw keycode. Codes whose table name is shared with other codes (the
+/// `KC_NO` placeholders) are named by number instead: the factory Fn layers use those
+/// codes for device settings (mouse first delay, USB report rate, key scan period, ...),
+/// and a name that maps back to index 0 would silently wipe them on the next push.
+pub fn key_code_name(keycode: usize) -> String {
+    let name = KEY_CODE_NAME[keycode];
+    if keycode == 0 || KEY_CODE_NAME.iter().filter(|x| **x == name).count() == 1 {
+        name.to_string()
+    } else {
+        format!("ANY(0x{:02X})", keycode)
+    }
+}
+
+/// Inverse of `key_code_name`.
+pub fn key_code_from_name(name: &str) -> Option<usize> {
+    KEY_CODE_NAME.iter().position(|x| *x == name).or_else(|| {
+        name.strip_prefix("ANY(0x")
+            .and_then(|rest| rest.strip_suffix(')'))
+            .and_then(|hex| u8::from_str_radix(hex, 16).ok())
+            .map(usize::from)
+    })
+}
+
 #[repr(u16)]
 pub enum OpCode {
     VersionRead = 0xf9,
