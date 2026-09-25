@@ -19,7 +19,7 @@
           name = "nizctl";
           src = final.lib.cleanSource ./.;
           nativeBuildInputs = [ final.pkg-config ];
-          buildInputs = [ final.hidapi final.libusb ];
+          buildInputs = [ final.hidapi final.libusb1 ];
           cargoLock = {
             lockFile = ./Cargo.lock;
           };
